@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "dgSpecHash": "/5bVBRFhWzg=",
+  "success": true,
+  "projectFilePath": "/home/valdefercho/Documents/Progra-4/parcial/parcial-1/parcial-1.csproj",
+  "expectedPackageFiles": [
+    "/home/valdefercho/.nuget/packages/mapster/10.0.7/mapster.10.0.7.nupkg.sha512",
+    "/home/valdefercho/.nuget/packages/mapster.core/10.0.7/mapster.core.10.0.7.nupkg.sha512",
+    "/home/valdefercho/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/8.0.0/microsoft.aspnetcore.authentication.jwtbearer.8.0.0.nupkg.sha512",
+    "/home/valdefercho/.nuget/packages/microsoft.identitymodel.abstractions/7.0.3/microsoft.identitymodel.abstractions.7.0.3.nupkg.sha512",
+    "/home/valdefercho/.nuget/packages/microsoft.identitymodel.jsonwebtokens/7.0.3/microsoft.identitymodel.jsonwebtokens.7.0.3.nupkg.sha512",
+    "/home/valdefercho/.nuget/packages/microsoft.identitymodel.logging/7.0.3/microsoft.identitymodel.logging.7.0.3.nupkg.sha512",
+    "/home/valdefercho/.nuget/packages/microsoft.identitymodel.protocols/7.0.3/microsoft.identitymodel.protocols.7.0.3.nupkg.sha512",
+    "/home/valdefercho/.nuget/packages/microsoft.identitymodel.protocols.openidconnect/7.0.3/microsoft.identitymodel.protocols.openidconnect.7.0.3.nupkg.sha512",
+    "/home/valdefercho/.nuget/packages/microsoft.identitymodel.tokens/7.0.3/microsoft.identitymodel.tokens.7.0.3.nupkg.sha512",
+    "/home/valdefercho/.nuget/packages/system.identitymodel.tokens.jwt/7.0.3/system.identitymodel.tokens.jwt.7.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
