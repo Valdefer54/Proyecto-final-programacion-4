@@ -41,16 +41,6 @@ public class KardexController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("salida")]
-    [Authorize(Policy = "Administrador")]
-    public async Task<IActionResult> RegistrarSalida([FromBody] KardexSalidaRequestDto dto)
-    {
-        var result = await _kardexService.RegistrarSalida(dto);
-        if (result.Estado == "error")
-            return BadRequest(result);
-        return Ok(result);
-    }
-
     [HttpPut("{movimientoId}")]
     [Authorize(Policy = "Administrador")]
     public async Task<IActionResult> ActualizarMovimiento(int movimientoId, [FromBody] KardexUpdateDto dto)

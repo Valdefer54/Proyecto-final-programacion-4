@@ -14,7 +14,6 @@ builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<IInventarioRepository, InventarioRepository>();
 builder.Services.AddScoped<IVentaRepository, VentaRepository>();
-builder.Services.AddScoped<IMovimientoInventarioRepository, MovimientoInventarioRepository>();
 builder.Services.AddScoped<IKardexRepository, KardexRepository>();
 
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
@@ -22,7 +21,6 @@ builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IInventarioService, InventarioService>();
 builder.Services.AddScoped<IVentaService, VentaService>();
-builder.Services.AddScoped<IMovimientoInventarioService, MovimientoInventarioService>();
 builder.Services.AddScoped<IKardexService, KardexService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "ClaveSuperSecretaParaJwt2024!Minimo32Caracteres";

@@ -18,21 +18,18 @@ public class VentasController : ControllerBase
     private readonly IVentaService _ventaService;
     private readonly IUsuarioService _usuarioService;
     private readonly IProductoService _productoService;
-    private readonly IInventarioService _inventarioService;
-    private readonly IMovimientoInventarioService _movimientoService;
+    private readonly IKardexService _kardexService;
 
     public VentasController(
         IVentaService ventaService,
         IUsuarioService usuarioService,
         IProductoService productoService,
-        IInventarioService inventarioService,
-        IMovimientoInventarioService movimientoService)
+        IKardexService kardexService)
     {
         _ventaService = ventaService;
         _usuarioService = usuarioService;
         _productoService = productoService;
-        _inventarioService = inventarioService;
-        _movimientoService = movimientoService;
+        _kardexService = kardexService;
     }
 
     [HttpGet]
@@ -85,23 +82,17 @@ public class VentasController : ControllerBase
             var producto = await _productoService.GetById(det.ProductoId);
             if (producto == null) return BadRequest(new { mensaje = $"Producto {det.ProductoId} no encontrado" });
 
-            var inventario = await _inventarioService.GetByProducto(det.ProductoId);
-            if (inventario == null || inventario.Cantidad < det.Cantidad)
-            {
-                return BadRequest(new { mensaje = $"Stock insuficiente para {producto.Nombre}" });
-            }
-
-            inventario.ReducirStock(det.Cantidad);
-            await _inventarioService.Update(inventario);
-
-            await _movimientoService.Add(new MovimientoInventario
+            var result = await _kardexService.RegistrarSalida(new KardexSalidaRequestDto
             {
                 ProductoId = det.ProductoId,
-                Tipo = "Salida",
+                Fecha = DateTime.Now,
+                Documento = "Venta",
                 Cantidad = det.Cantidad,
-                StockResultante = inventario.Cantidad,
-                Referencia = $"Venta"
+                Concepto = $"Venta - {producto.Nombre}"
             });
+
+            if (result.Estado == "error")
+                return BadRequest(new { mensaje = result.Error });
 
             detalles.Add(new DetalleVenta
             {
@@ -144,21 +135,15 @@ public class VentasController : ControllerBase
 
         foreach (var det in venta.Detalles)
         {
-            var inventario = await _inventarioService.GetByProducto(det.ProductoId);
-            if (inventario != null)
+            await _kardexService.RegistrarEntrada(new KardexEntradaRequestDto
             {
-                inventario.AgregarStock(det.Cantidad);
-                await _inventarioService.Update(inventario);
-
-                await _movimientoService.Add(new MovimientoInventario
-                {
-                    ProductoId = det.ProductoId,
-                    Tipo = "Entrada",
-                    Cantidad = det.Cantidad,
-                    StockResultante = inventario.Cantidad,
-                    Referencia = $"Cancelación venta #{id}"
-                });
-            }
+                ProductoId = det.ProductoId,
+                Fecha = DateTime.Now,
+                Documento = $"Cancelacion-VTA-{id}",
+                Cantidad = det.Cantidad,
+                CostoUnitario = 0,
+                Concepto = $"Cancelación venta #{id}"
+            });
         }
 
         venta.Cancelar();

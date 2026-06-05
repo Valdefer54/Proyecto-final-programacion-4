@@ -8,11 +8,13 @@ public class KardexService : IKardexService
 {
     private readonly IKardexRepository _repository;
     private readonly IProductoService _productoService;
+    private readonly IInventarioService _inventarioService;
 
-    public KardexService(IKardexRepository repository, IProductoService productoService)
+    public KardexService(IKardexRepository repository, IProductoService productoService, IInventarioService inventarioService)
     {
         _repository = repository;
         _productoService = productoService;
+        _inventarioService = inventarioService;
     }
 
     private (int cantidad, decimal cpp, decimal valorTotal) CalcularBalance(
@@ -141,6 +143,15 @@ public class KardexService : IKardexService
 
         var creado = await _repository.Add(movimiento);
 
+        var inventario = await _inventarioService.GetByProducto(dto.ProductoId);
+        if (inventario == null)
+        {
+            inventario = new Inventario { ProductoId = dto.ProductoId, Cantidad = cantidadActual, StockMinimo = 0, StockMaximo = 0 };
+            await _inventarioService.Add(inventario);
+        }
+        inventario.AgregarStock(dto.Cantidad);
+        await _inventarioService.Update(inventario);
+
         return new KardexOperacionResponseDto
         {
             Id = creado.Id,
@@ -179,6 +190,15 @@ public class KardexService : IKardexService
         };
 
         var creado = await _repository.Add(movimiento);
+
+        var inventario = await _inventarioService.GetByProducto(dto.ProductoId);
+        if (inventario == null)
+        {
+            inventario = new Inventario { ProductoId = dto.ProductoId, Cantidad = cantidadActual, StockMinimo = 0, StockMaximo = 0 };
+            await _inventarioService.Add(inventario);
+        }
+        inventario.ReducirStock(dto.Cantidad);
+        await _inventarioService.Update(inventario);
 
         return new KardexOperacionResponseDto
         {

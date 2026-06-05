@@ -7,9 +7,6 @@ using parcial_1.Servicios;
 
 namespace parcial_1.Controladores;
 
-// Controlador de inventarios: gestiona el CRUD del inventario y consulta de stock bajo.
-// Permite actualizar cantidades y consultar inventario por producto.
-// Incluye endpoints: GET all, GET byId, GET byProducto, GET bajo-stock, POST create, PUT update, DELETE.
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -17,13 +14,13 @@ public class InventariosController : ControllerBase
 {
     private readonly IInventarioService _inventarioService;
     private readonly IProductoService _productoService;
-    private readonly IMovimientoInventarioService _movimientoService;
+    private readonly IKardexService _kardexService;
 
-    public InventariosController(IInventarioService inventarioService, IProductoService productoService, IMovimientoInventarioService movimientoService)
+    public InventariosController(IInventarioService inventarioService, IProductoService productoService, IKardexService kardexService)
     {
         _inventarioService = inventarioService;
         _productoService = productoService;
-        _movimientoService = movimientoService;
+        _kardexService = kardexService;
     }
 
     [HttpGet]
@@ -55,21 +52,6 @@ public class InventariosController : ControllerBase
         return Ok(dto);
     }
 
-    [HttpGet("movimientos")]
-    [Authorize(Policy = "Administrador")]
-    public async Task<IActionResult> GetMovimientos()
-    {
-        var movimientos = await _movimientoService.GetAll();
-        return Ok(movimientos);
-    }
-
-    [HttpGet("movimientos/producto/{productoId}")]
-    public async Task<IActionResult> GetMovimientosByProducto(int productoId)
-    {
-        var movimientos = await _movimientoService.GetByProducto(productoId);
-        return Ok(movimientos);
-    }
-
     [HttpGet("bajo-stock")]
     [Authorize(Policy = "Administrador")]
     public async Task<IActionResult> GetBajoStock()
@@ -90,17 +72,7 @@ public class InventariosController : ControllerBase
         if (existente != null) return BadRequest(new { mensaje = "El producto ya tiene inventario" });
 
         var inventario = dto.Adapt<Inventario>();
-
         var creado = await _inventarioService.Add(inventario);
-
-        await _movimientoService.Add(new MovimientoInventario
-        {
-            ProductoId = dto.ProductoId,
-            Tipo = "Entrada",
-            Cantidad = dto.Cantidad,
-            StockResultante = dto.Cantidad,
-            Referencia = "Inventario inicial"
-        });
 
         var resultDto = await MapearInventario(creado);
         return CreatedAtAction(nameof(GetById), new { id = creado.Id }, resultDto);
@@ -123,14 +95,29 @@ public class InventariosController : ControllerBase
 
         if (diferencia != 0)
         {
-            await _movimientoService.Add(new MovimientoInventario
+            if (diferencia > 0)
             {
-                ProductoId = inventario.ProductoId,
-                Tipo = diferencia > 0 ? "Entrada" : "Salida",
-                Cantidad = Math.Abs(diferencia),
-                StockResultante = inventario.Cantidad,
-                Referencia = "Ajuste manual"
-            });
+                await _kardexService.RegistrarEntrada(new KardexEntradaRequestDto
+                {
+                    ProductoId = inventario.ProductoId,
+                    Fecha = DateTime.Now,
+                    Documento = "Ajuste",
+                    Cantidad = diferencia,
+                    CostoUnitario = 0,
+                    Concepto = "Ajuste manual de inventario"
+                });
+            }
+            else
+            {
+                await _kardexService.RegistrarSalida(new KardexSalidaRequestDto
+                {
+                    ProductoId = inventario.ProductoId,
+                    Fecha = DateTime.Now,
+                    Documento = "Ajuste",
+                    Cantidad = Math.Abs(diferencia),
+                    Concepto = "Ajuste manual de inventario"
+                });
+            }
         }
         var resultDto = await MapearInventario(inventario);
         return Ok(resultDto);

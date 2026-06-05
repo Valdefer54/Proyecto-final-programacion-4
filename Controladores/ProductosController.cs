@@ -84,6 +84,19 @@ public class ProductosController : ControllerBase
         var producto = dto.Adapt<Producto>();
 
         var creado = await _productoService.Add(producto);
+
+        var inventarioExistente = await _inventarioService.GetByProducto(creado.Id);
+        if (inventarioExistente == null)
+        {
+            await _inventarioService.Add(new Inventario
+            {
+                ProductoId = creado.Id,
+                Cantidad = 0,
+                StockMinimo = 0,
+                StockMaximo = 0
+            });
+        }
+
         var resultDto = await MapearProducto(creado);
         return CreatedAtAction(nameof(GetById), new { id = creado.Id }, resultDto);
     }
